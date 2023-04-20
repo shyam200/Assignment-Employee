@@ -1,3 +1,4 @@
+import 'package:employee_app/presentation_layer/employee_list_page.dart';
 import 'package:employee_app/resources/styles/text_styles.dart';
 import 'package:flutter/material.dart';
 
@@ -32,18 +33,21 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
     );
   }
 
-  _buildBody() => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(Images.noRecordsImg),
-            const Text(
-              StringKeys.noEmployeeText,
-              style: TextStyles.noEmployeeText,
-            ),
-          ],
-        ),
-      );
+  _buildBody() => EmployeeListPage();
+  // Center(
+  //       child:
+
+  // Column(
+  //   mainAxisAlignment: MainAxisAlignment.center,
+  //   children: [
+  //     Image.asset(Images.noRecordsImg),
+  //     const Text(
+  //       StringKeys.noEmployeeText,
+  //       style: TextStyles.noEmployeeText,
+  //     ),
+  //   ],
+  // ),
+  // );
 
   FloatingActionButton _buildAddBtn() {
     return FloatingActionButton(

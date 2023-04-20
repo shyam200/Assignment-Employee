@@ -4,10 +4,14 @@ class Employee extends Equatable {
   final String employeeName;
   final String employeeRole;
   final DateTime dateFrom;
-  final DateTime dateTo;
+  final DateTime? dateTo;
 
-  const Employee(
-      this.employeeName, this.employeeRole, this.dateFrom, this.dateTo);
+  const Employee({
+    required this.employeeName,
+    required this.employeeRole,
+    required this.dateFrom,
+    required this.dateTo,
+  });
 
   @override
   List<Object?> get props => [

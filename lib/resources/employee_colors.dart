@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
-class EmployeeColors {
-  static const _addBtnColor = "#1DA1F2";
-  static const _blackColor = "#323238";
-  static const _lightGreyColor = "#949C9E";
+class EMPColors {
+  static const addBtnColor = "#1DA1F2";
+  static const headingColor = "#323238";
+  static const lightBlueColor = "#1DA1F2";
+  static const cancelBtnColor = "#EDF8FF";
+  static const lightGreyColor = "#949C9E";
+  static const mainpageBgColor = "#F2F2F2";
+  static const subHeadingColor = "#949C9E";
+  static const dismissBgColor = "#F34642";
 
   static const white = Color(0xffffffff); //R: 255, G: 255, B: 255
 
@@ -17,8 +22,4 @@ class EmployeeColors {
       return defaultColor;
     }
   }
-
-  static get blackColor => fromHex(hexString: _blackColor);
-  get addBtnColor => fromHex(hexString: _addBtnColor);
-  get lightGreyColor => fromHex(hexString: _lightGreyColor);
 }
