@@ -1,29 +1,43 @@
-import 'dart:developer';
-
-import 'package:employee_app/data_layer/models/employee_model.dart';
-import 'package:employee_app/resources/employee_colors.dart';
-import 'package:employee_app/resources/images.dart';
-import 'package:employee_app/resources/margin_keys.dart';
-import 'package:employee_app/resources/string_keys.dart';
-import 'package:employee_app/resources/styles/text_styles.dart';
 import 'package:flutter/material.dart';
 
+import '../business_layer/employee_bloc/employee_bloc.dart';
+import '../business_layer/employee_bloc/employee_event.dart';
+import '../data_layer/models/employee_model.dart';
+import '../resources/employee_colors.dart';
+import '../resources/images.dart';
+import '../resources/margin_keys.dart';
+import '../resources/string_keys.dart';
+import '../resources/styles/text_styles.dart';
+import 'employee_add_details_page.dart';
+
 class EmployeeListPage extends StatefulWidget {
+  final EmployeeBloc bloc;
   final List<Employee> employeesList;
-  const EmployeeListPage({super.key, required this.employeesList});
+  const EmployeeListPage(
+      {super.key, required this.bloc, required this.employeesList});
 
   @override
   State<EmployeeListPage> createState() => _EmployeeListPageState();
 }
 
 class _EmployeeListPageState extends State<EmployeeListPage> {
-  final List<Employee> _currentEmplist = [];
-  final List<Employee> _prevEmpList = [];
+  List<Employee> _currentEmplist = [];
+  List<Employee> _prevEmpList = [];
 
   @override
   void initState() {
     super.initState();
     _retrieveCurrentAndPreviousEmp(widget.employeesList);
+  }
+
+  @override
+  void didUpdateWidget(covariant EmployeeListPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.employeesList != widget.employeesList) {
+      _currentEmplist = [];
+      _prevEmpList = [];
+      _retrieveCurrentAndPreviousEmp(widget.employeesList);
+    }
   }
 
   @override
@@ -82,10 +96,8 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
                 key: UniqueKey(),
                 direction: DismissDirection.endToStart,
                 background: _buildDismisssibleBackground(),
-                onDismissed: (direction) {
-                  // Then show a snackbar.
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text(StringKeys.dismisseText)));
+                onDismissed: (_) {
+                  _onDismissed(employee.id);
                 },
                 child: _buildListCard(employee),
               ),
@@ -95,23 +107,36 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
   }
 
   _buildListCard(Employee employee) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: MarginKeys.margin16,
-            vertical: MarginKeys.margin16,
+    return InkWell(
+      onTap: () async {
+        final shouldRefresh =
+            await Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => AddEmployeeDetailsPage(
+                      bloc: widget.bloc,
+                      employee: employee,
+                    )));
+        if (shouldRefresh ?? false) {
+          widget.bloc.add(EmployeeGetDataEvent());
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: MarginKeys.margin16,
+              vertical: MarginKeys.margin16,
+            ),
+            child: _buildListCardItems(employee),
           ),
-          child: _buildListCardItems(employee),
-        ),
-        //build line
-        Container(
-          width: double.infinity,
-          height: 0.2,
-          color: Colors.grey,
-        )
-      ],
+          //build line
+          Container(
+            width: double.infinity,
+            height: 0.2,
+            color: Colors.grey,
+          )
+        ],
+      ),
     );
   }
 
@@ -132,21 +157,26 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
                 color: EMPColors.fromHex(hexString: EMPColors.subHeadingColor),
               )),
         ),
-        Row(
-          children: [
-            Text(employee.dateFrom,
-                style: TextStyles.subTitleText.copyWith(
-                  color:
-                      EMPColors.fromHex(hexString: EMPColors.subHeadingColor),
-                )),
-            employee.dateTo!.isNotEmpty ? const Text(' - ') : const SizedBox(),
-            Text(employee.dateTo ?? '',
-                style: TextStyles.subTitleText.copyWith(
-                  color:
-                      EMPColors.fromHex(hexString: EMPColors.subHeadingColor),
-                )),
-          ],
-        )
+        employee.dateFrom.isNotEmpty
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(employee.dateFrom,
+                      style: TextStyles.subTitleText.copyWith(
+                        color: EMPColors.fromHex(
+                            hexString: EMPColors.subHeadingColor),
+                      )),
+                  employee.dateTo!.isNotEmpty
+                      ? const Text(' - ')
+                      : const SizedBox(),
+                  Text(employee.dateTo ?? '',
+                      style: TextStyles.subTitleText.copyWith(
+                        color: EMPColors.fromHex(
+                            hexString: EMPColors.subHeadingColor),
+                      )),
+                ],
+              )
+            : const SizedBox(),
       ],
     );
   }
@@ -172,6 +202,28 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
             color: EMPColors.fromHex(hexString: EMPColors.lightBlueColor)),
       ),
     );
+  }
+
+  _onDismissed(String employeeId) {
+    // Then show a snackbar.
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text(StringKeys.dismisseText)));
+    //Removing from database
+    for (var item in _currentEmplist) {
+      if (item.id == employeeId) {
+        _currentEmplist.remove(item);
+        break;
+      }
+    }
+
+    for (var item in _prevEmpList) {
+      if (item.id == employeeId) {
+        _prevEmpList.remove(item);
+        break;
+      }
+    }
+    widget.bloc.add(EmployeeRemoveFromDBEvent(id: employeeId));
+    // Future.delayed(const Duration(seconds: 1));
   }
 
   _retrieveCurrentAndPreviousEmp(List<Employee> empList) {

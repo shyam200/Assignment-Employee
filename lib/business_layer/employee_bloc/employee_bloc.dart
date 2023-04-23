@@ -1,11 +1,8 @@
-import 'dart:developer';
-
-import 'package:employee_app/core/hive/hive_local_data_base.dart';
-import 'package:employee_app/data_layer/models/employee_model.dart';
-import 'package:employee_app/resources/hive_db/box_keys.dart';
-import 'package:employee_app/resources/string_keys.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/hive/hive_local_data_base.dart';
+import '../../data_layer/models/employee_model.dart';
+import '../../resources/hive_db/box_keys.dart';
 import 'employee_event.dart';
 import 'employee_state.dart';
 
@@ -23,7 +20,7 @@ class EmployeeBloc extends Bloc<EmployeeEvent, EmployeeState> {
     //saving to database
     localDatabase.addDataToLocalHiveDb<Employee>(
         event.employee, HiveBoxKeys.employeeBoxKey, event.employee.id);
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
     emit(EmployeeDataSavedSuccessState());
   }
 

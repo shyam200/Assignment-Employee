@@ -1,16 +1,15 @@
 import 'dart:developer';
 
-import 'package:employee_app/business_layer/employee_bloc/employee_event.dart';
-import 'package:employee_app/business_layer/employee_bloc/employee_state.dart';
-import 'package:employee_app/data_layer/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../business_layer/employee_bloc/employee_bloc.dart';
+import '../business_layer/employee_bloc/employee_event.dart';
+import '../business_layer/employee_bloc/employee_state.dart';
 import '../core/custom_date_picker.dart';
 import '../core/horizontal_line.dart';
-import '../injection/injection_container.dart';
+import '../data_layer/models/employee_model.dart';
 import '../resources/dimension_keys.dart';
 import '../resources/employee_colors.dart';
 import '../resources/images.dart';
@@ -19,7 +18,9 @@ import '../resources/string_keys.dart';
 import '../resources/styles/text_styles.dart';
 
 class AddEmployeeDetailsPage extends StatefulWidget {
-  const AddEmployeeDetailsPage({super.key});
+  final EmployeeBloc bloc;
+  final Employee? employee;
+  const AddEmployeeDetailsPage({super.key, required this.bloc, this.employee});
 
   @override
   State<AddEmployeeDetailsPage> createState() => _AddEmployeeDetailsPageState();
@@ -30,45 +31,32 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   final TextEditingController _selectRoleController = TextEditingController();
   final TextEditingController _todayDateController = TextEditingController();
   final TextEditingController _noDateController = TextEditingController();
-  late final EmployeeBloc _bloc;
-  List<Employee>? _employee;
+  // late final EmployeeBloc _bloc;
+
   @override
   void initState() {
     super.initState();
-    _bloc = di<EmployeeBloc>();
+    _employeeController.text = widget.employee?.employeeName ?? '';
+    _selectRoleController.text = widget.employee?.employeeRole ?? '';
+    _todayDateController.text = widget.employee?.dateFrom ?? '';
+    _noDateController.text = widget.employee?.dateTo ?? '';
+    // _bloc = di<EmployeeBloc>();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer(
-        bloc: _bloc,
-        listener: (context, state) {
-          if (state is EmployeeLoadingSate) {
-            log('loading........');
-          } else if (state is EmployeeDataLoadedState) {
-            log('data loaded....${state.employeeList}');
-            _employee = state.employeeList;
-          }
-        },
-        builder: (context, state) {
-          return Stack(children: [
-            Scaffold(
-              appBar: AppBar(
-                centerTitle: false,
-                title: const Text(
-                  StringKeys.addEmployeeTitle,
-                  style: TextStyles.appTitle,
-                ),
-              ),
-              body: _buildBody(),
-            ),
-
-            state is EmployeeLoadingSate
-                ? const Center(child: CircularProgressIndicator())
-                : const SizedBox()
-            // Text('data'),
-          ]);
-        });
+    return Stack(children: [
+      Scaffold(
+        appBar: AppBar(
+          centerTitle: false,
+          title: const Text(
+            StringKeys.addEmployeeTitle,
+            style: TextStyles.appTitle,
+          ),
+        ),
+        body: _buildBody(),
+      ),
+    ]);
   }
 
   _buildBody() {
@@ -207,20 +195,19 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   }
 
   _onCancelTap() {
-    log('canceled....');
-    // _bloc.add(EmployeeRemoveFromDBEvent(id: "[#3b9d8]"));
-    // _bloc.add(EmployeeGetDataEvent());
+    Navigator.of(context).pop();
   }
 
   _onSaveTap() {
     final Employee employee = Employee(
-      id: UniqueKey().toString(),
+      id: widget.employee?.id ?? UniqueKey().toString(),
       employeeName: _employeeController.text,
       employeeRole: _selectRoleController.text,
       dateFrom: _todayDateController.text,
       dateTo: _noDateController.text,
     );
-    _bloc.add(EmployeeSaveToDBEvent(employee: employee));
+    widget.bloc.add(EmployeeSaveToDBEvent(employee: employee));
+    Navigator.of(context).pop(true);
   }
 
   _onSelectRoleTap() async {

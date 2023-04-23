@@ -1,3 +1,4 @@
+import 'package:employee_app/presentation_layer/employee_add_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -30,6 +31,12 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
     _bloc.add(EmployeeGetDataEvent());
   }
 
+  // @override
+  // void didUpdateWidget(covariant EmployeeMainPage oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   _employeesList;
+  // }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer(
@@ -48,7 +55,13 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
               style: TextStyles.appTitle,
             ),
           ),
-          body: _buildBody(),
+          body:
+              // state is EmployeeLoadingSate
+              //     ? const Center(
+              //         child: CircularProgressIndicator(),
+              //       )
+              //     :
+              _buildBody(),
           floatingActionButton: SizedBox(
             width: DimensionKeys.floatinActionBtnDimension,
             height: DimensionKeys.floatinActionBtnDimension,
@@ -62,6 +75,7 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
   _buildBody() {
     return _employeesList.isNotEmpty
         ? EmployeeListPage(
+            bloc: _bloc,
             employeesList: _employeesList,
           )
         : _buildNoDataImage();
@@ -84,7 +98,15 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
 
   FloatingActionButton _buildAddBtn() {
     return FloatingActionButton(
-      onPressed: () {},
+      onPressed: () async {
+        final shouldRefresh = await Navigator.of(context).push(
+            MaterialPageRoute(
+                builder: (_) => AddEmployeeDetailsPage(bloc: _bloc)));
+        // .then((value) => setState(() {}));
+        if (shouldRefresh ?? false) {
+          _bloc.add(EmployeeGetDataEvent());
+        }
+      },
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8.0))),
       child: const Icon(Icons.add),
