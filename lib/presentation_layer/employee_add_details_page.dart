@@ -1,10 +1,16 @@
 import 'dart:developer';
 
+import 'package:employee_app/business_layer/employee_bloc/employee_event.dart';
+import 'package:employee_app/business_layer/employee_bloc/employee_state.dart';
+import 'package:employee_app/data_layer/models/employee_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../business_layer/employee_bloc/employee_bloc.dart';
 import '../core/custom_date_picker.dart';
 import '../core/horizontal_line.dart';
+import '../injection/injection_container.dart';
 import '../resources/dimension_keys.dart';
 import '../resources/employee_colors.dart';
 import '../resources/images.dart';
@@ -24,36 +30,64 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   final TextEditingController _selectRoleController = TextEditingController();
   final TextEditingController _todayDateController = TextEditingController();
   final TextEditingController _noDateController = TextEditingController();
+  late final EmployeeBloc _bloc;
+  List<Employee>? _employee;
+  @override
+  void initState() {
+    super.initState();
+    _bloc = di<EmployeeBloc>();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        title: const Text(
-          StringKeys.addEmployeeTitle,
-          style: TextStyles.appTitle,
-        ),
-      ),
-      body: _buildBody(),
-    );
+    return BlocConsumer(
+        bloc: _bloc,
+        listener: (context, state) {
+          if (state is EmployeeLoadingSate) {
+            log('loading........');
+          } else if (state is EmployeeDataLoadedState) {
+            log('data loaded....${state.employeeList}');
+            _employee = state.employeeList;
+          }
+        },
+        builder: (context, state) {
+          return Stack(children: [
+            Scaffold(
+              appBar: AppBar(
+                centerTitle: false,
+                title: const Text(
+                  StringKeys.addEmployeeTitle,
+                  style: TextStyles.appTitle,
+                ),
+              ),
+              body: _buildBody(),
+            ),
+
+            state is EmployeeLoadingSate
+                ? const Center(child: CircularProgressIndicator())
+                : const SizedBox()
+            // Text('data'),
+          ]);
+        });
   }
 
   _buildBody() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 24, left: 16, right: 16),
-      child: Column(
-        children: [
-          _employeeField(),
-          const SizedBox(height: MarginKeys.textFieldMargin),
-          _selectRoleField(),
-          const SizedBox(height: MarginKeys.textFieldMargin),
-          _dateFieldRow(),
-          const Spacer(),
-          _buildBottomBtns()
-        ],
+    return Stack(children: [
+      Padding(
+        padding: const EdgeInsets.only(top: 24, left: 16, right: 16),
+        child: Column(
+          children: [
+            _employeeField(),
+            const SizedBox(height: MarginKeys.textFieldMargin),
+            _selectRoleField(),
+            const SizedBox(height: MarginKeys.textFieldMargin),
+            _dateFieldRow(),
+            const Spacer(),
+            _buildBottomBtns()
+          ],
+        ),
       ),
-    );
+    ]);
   }
 
   _dateFieldRow() {
@@ -88,8 +122,10 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
             prefixIcon: Image.asset(Images.roleIcon),
             suffixIcon: Image.asset(Images.roleDropdownIcon),
             hintText: StringKeys.selectRoleHintText,
-            hintStyle: TextStyles.titleText.copyWith(
-                color: EMPColors.fromHex(hexString: EMPColors.headingColor)),
+            hintStyle: _selectRoleController.text.isNotEmpty
+                ? TextStyles.titleText.copyWith(
+                    color: EMPColors.fromHex(hexString: EMPColors.headingColor))
+                : null,
             contentPadding: const EdgeInsets.symmetric(
                 vertical: MarginKeys.commonVerticalPadding)),
         readOnly: true,
@@ -170,10 +206,21 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
     );
   }
 
-  _onCancelTap() {}
+  _onCancelTap() {
+    log('canceled....');
+    // _bloc.add(EmployeeRemoveFromDBEvent(id: "[#3b9d8]"));
+    // _bloc.add(EmployeeGetDataEvent());
+  }
 
   _onSaveTap() {
-    print('saving.......');
+    final Employee employee = Employee(
+      id: UniqueKey().toString(),
+      employeeName: _employeeController.text,
+      employeeRole: _selectRoleController.text,
+      dateFrom: _todayDateController.text,
+      dateTo: _noDateController.text,
+    );
+    _bloc.add(EmployeeSaveToDBEvent(employee: employee));
   }
 
   _onSelectRoleTap() async {
@@ -244,21 +291,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
             contentPadding: const EdgeInsets.symmetric(
                 vertical: MarginKeys.commonVerticalPadding)),
         readOnly: true,
-        onTap: () async {
-          final picketdate = await showCustomDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2050),
-              cancelText: StringKeys.cancelText,
-              confirmText: StringKeys.saveText);
-          final formattedDate = DateFormat('d MMM y');
-          final selectedDate = picketdate != null
-              ? formattedDate.format(picketdate)
-              : StringKeys.today;
-          _todayDateController.text = selectedDate;
-          log(picketdate.toString());
-        },
+        onTap: _onTodayDateTap,
       ),
     );
   }
@@ -287,25 +320,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
             contentPadding: const EdgeInsets.symmetric(
                 vertical: MarginKeys.commonVerticalPadding)),
         readOnly: true,
-        onTap: () async {
-          final picketdate = await showCustomDatePicker(
-              context: context,
-              builder: (context, child) {
-                return Container(
-                  decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(44.0))),
-                  child: child,
-                );
-              },
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2050),
-              cancelText: StringKeys.cancelText,
-              confirmText: StringKeys.saveText,
-              isToDate: true);
-
-          log(picketdate.toString());
-        },
+        onTap: _onNoDateTap,
       ),
     );
   }
@@ -313,5 +328,44 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   _onBottomSheetItemTap(String item) {
     _selectRoleController.text = item;
     Navigator.of(context).pop();
+  }
+
+  _onTodayDateTap() async {
+    final picketdate = await showCustomDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2050),
+        cancelText: StringKeys.cancelText,
+        confirmText: StringKeys.saveText);
+    final formattedDate = DateFormat('d MMM y');
+    final selectedDate = picketdate != null
+        ? formattedDate.format(picketdate)
+        : StringKeys.today;
+    _todayDateController.text = selectedDate;
+  }
+
+  _onNoDateTap() async {
+    final picketdate = await showCustomDatePicker(
+        context: context,
+        builder: (context, child) {
+          return Container(
+            decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(44.0))),
+            child: child,
+          );
+        },
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2050),
+        cancelText: StringKeys.cancelText,
+        confirmText: StringKeys.saveText,
+        isToDate: true);
+
+    final formattedDate = DateFormat('d MMM y');
+    final selectedDate = picketdate != null
+        ? formattedDate.format(picketdate)
+        : StringKeys.noDate;
+    _noDateController.text = selectedDate.toString();
   }
 }

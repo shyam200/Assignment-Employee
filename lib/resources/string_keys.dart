@@ -24,4 +24,7 @@ class StringKeys {
   static const nextMonday = "Next Monday";
   static const nextTuesday = "Next Tuesday";
   static const afterWeek = "After 1 Week";
+
+  //Hive data key
+  static const employeeDataKey = "employeeDataKey";
 }

@@ -15,4 +15,14 @@ class EmployeeSaveToDBEvent extends EmployeeEvent {
   final Employee employee;
 
   const EmployeeSaveToDBEvent({required this.employee});
+  @override
+  List<Object?> get props => [employee];
+}
+
+class EmployeeRemoveFromDBEvent extends EmployeeEvent {
+  final String id;
+
+  const EmployeeRemoveFromDBEvent({required this.id});
+  @override
+  List<Object?> get props => [id];
 }
