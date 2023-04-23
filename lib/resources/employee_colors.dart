@@ -9,6 +9,7 @@ class EMPColors {
   static const mainpageBgColor = "#F2F2F2";
   static const subHeadingColor = "#949C9E";
   static const dismissBgColor = "#F34642";
+  static const hexWhiteColor = "#FFFFFF";
 
   static const white = Color(0xffffffff); //R: 255, G: 255, B: 255
 

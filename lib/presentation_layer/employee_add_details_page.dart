@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
+import '../core/custom_date_picker.dart';
 import '../core/horizontal_line.dart';
 import '../resources/dimension_keys.dart';
 import '../resources/employee_colors.dart';
@@ -18,6 +20,11 @@ class AddEmployeeDetailsPage extends StatefulWidget {
 }
 
 class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
+  final TextEditingController _employeeController = TextEditingController();
+  final TextEditingController _selectRoleController = TextEditingController();
+  final TextEditingController _todayDateController = TextEditingController();
+  final TextEditingController _noDateController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +39,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
     );
   }
 
-  Padding _buildBody() {
+  _buildBody() {
     return Padding(
       padding: const EdgeInsets.only(top: 24, left: 16, right: 16),
       child: Column(
@@ -53,37 +60,10 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildDateField(hintText: 'Today'),
+        _buildTodayDateField(),
         Image.asset(Images.arrowRight),
-        _buildDateField(hintText: 'No date'),
+        _buildNoDateFiled(),
       ],
-    );
-  }
-
-  _buildDateField({String hintText = ""}) {
-    return SizedBox(
-      height: DimensionKeys.textFieldHeight,
-      width: 170,
-      child: TextField(
-        decoration: InputDecoration(
-            enabledBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(
-                    Radius.circular(DimensionKeys.textFieldBorderRadius)),
-                borderSide: BorderSide(
-                    width: DimensionKeys.textFieldBorderWidth,
-                    color: Colors.grey)),
-            focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(
-                    Radius.circular(DimensionKeys.textFieldBorderRadius)),
-                borderSide: BorderSide(
-                    width: DimensionKeys.textFieldBorderWidth,
-                    color: Colors.grey)),
-            prefixIcon: Image.asset(Images.dateIcon),
-            hintText: hintText,
-            contentPadding: const EdgeInsets.symmetric(
-                vertical: MarginKeys.commonVerticalPadding)),
-        readOnly: true,
-      ),
     );
   }
 
@@ -91,6 +71,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
     return SizedBox(
       height: DimensionKeys.textFieldHeight,
       child: TextField(
+        controller: _selectRoleController,
         decoration: InputDecoration(
             enabledBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(
@@ -107,6 +88,8 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
             prefixIcon: Image.asset(Images.roleIcon),
             suffixIcon: Image.asset(Images.roleDropdownIcon),
             hintText: StringKeys.selectRoleHintText,
+            hintStyle: TextStyles.titleText.copyWith(
+                color: EMPColors.fromHex(hexString: EMPColors.headingColor)),
             contentPadding: const EdgeInsets.symmetric(
                 vertical: MarginKeys.commonVerticalPadding)),
         readOnly: true,
@@ -119,6 +102,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
     return SizedBox(
       height: DimensionKeys.textFieldHeight,
       child: TextField(
+        controller: _employeeController,
         decoration: InputDecoration(
             enabledBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(
@@ -204,7 +188,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
 
   _buildBottomRoleSheet() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildBottomSheetItem(StringKeys.productDesigner),
@@ -220,11 +204,114 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
 
   _buildBottomSheetItem(String text) {
     return InkWell(
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20.0),
-        child: Text(text),
+      onTap: () {
+        _onBottomSheetItemTap(text);
+      },
+      child: SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: MarginKeys.margin16),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+          ),
+        ),
       ),
     );
+  }
+
+  _buildTodayDateField() {
+    return SizedBox(
+      height: DimensionKeys.textFieldHeight,
+      width: 170,
+      child: TextField(
+        controller: _todayDateController,
+        decoration: InputDecoration(
+            enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(
+                    Radius.circular(DimensionKeys.textFieldBorderRadius)),
+                borderSide: BorderSide(
+                    width: DimensionKeys.textFieldBorderWidth,
+                    color: Colors.grey)),
+            focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(
+                    Radius.circular(DimensionKeys.textFieldBorderRadius)),
+                borderSide: BorderSide(
+                    width: DimensionKeys.textFieldBorderWidth,
+                    color: Colors.grey)),
+            prefixIcon: Image.asset(Images.dateIcon),
+            hintText: StringKeys.today,
+            contentPadding: const EdgeInsets.symmetric(
+                vertical: MarginKeys.commonVerticalPadding)),
+        readOnly: true,
+        onTap: () async {
+          final picketdate = await showCustomDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2050),
+              cancelText: StringKeys.cancelText,
+              confirmText: StringKeys.saveText);
+          final formattedDate = DateFormat('d MMM y');
+          final selectedDate = picketdate != null
+              ? formattedDate.format(picketdate)
+              : StringKeys.today;
+          _todayDateController.text = selectedDate;
+          log(picketdate.toString());
+        },
+      ),
+    );
+  }
+
+  _buildNoDateFiled() {
+    return SizedBox(
+      height: DimensionKeys.textFieldHeight,
+      width: 170,
+      child: TextField(
+        controller: _noDateController,
+        decoration: InputDecoration(
+            enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(
+                    Radius.circular(DimensionKeys.textFieldBorderRadius)),
+                borderSide: BorderSide(
+                    width: DimensionKeys.textFieldBorderWidth,
+                    color: Colors.grey)),
+            focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(
+                    Radius.circular(DimensionKeys.textFieldBorderRadius)),
+                borderSide: BorderSide(
+                    width: DimensionKeys.textFieldBorderWidth,
+                    color: Colors.grey)),
+            prefixIcon: Image.asset(Images.dateIcon),
+            hintText: StringKeys.noDate,
+            contentPadding: const EdgeInsets.symmetric(
+                vertical: MarginKeys.commonVerticalPadding)),
+        readOnly: true,
+        onTap: () async {
+          final picketdate = await showCustomDatePicker(
+              context: context,
+              builder: (context, child) {
+                return Container(
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(44.0))),
+                  child: child,
+                );
+              },
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2050),
+              cancelText: StringKeys.cancelText,
+              confirmText: StringKeys.saveText,
+              isToDate: true);
+
+          log(picketdate.toString());
+        },
+      ),
+    );
+  }
+
+  _onBottomSheetItemTap(String item) {
+    _selectRoleController.text = item;
+    Navigator.of(context).pop();
   }
 }

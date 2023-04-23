@@ -11,10 +11,17 @@ class StringKeys {
   static const prevEmpHeading = "Previous employees";
   static const deleteInfoText = "Swipe left to delete";
   static const dismisseText = "Employee data has been deleted";
+  static const noDate = "No date";
 
   //Selet Roles
   static const productDesigner = "Product Designer";
   static const flutterDeveloper = "Flutter Developer";
   static const qaTester = "QA Tester";
   static const productOwner = "Product Owner";
+
+  //CustomDate Header
+  static const today = "Today";
+  static const nextMonday = "Next Monday";
+  static const nextTuesday = "Next Tuesday";
+  static const afterWeek = "After 1 Week";
 }
