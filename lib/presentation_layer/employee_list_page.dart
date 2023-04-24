@@ -13,8 +13,12 @@ import 'employee_add_details_page.dart';
 class EmployeeListPage extends StatefulWidget {
   final EmployeeBloc bloc;
   final List<Employee> employeesList;
+  final Function? removeItemCallback;
   const EmployeeListPage(
-      {super.key, required this.bloc, required this.employeesList});
+      {super.key,
+      required this.bloc,
+      required this.employeesList,
+      this.removeItemCallback});
 
   @override
   State<EmployeeListPage> createState() => _EmployeeListPageState();
@@ -93,7 +97,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
             return Container(
               color: EMPColors.white,
               child: Dismissible(
-                key: UniqueKey(),
+                key: Key(employee.id),
                 direction: DismissDirection.endToStart,
                 background: _buildDismisssibleBackground(),
                 onDismissed: (_) {
@@ -208,22 +212,10 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
     // Then show a snackbar.
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text(StringKeys.dismisseText)));
-    //Removing from database
-    for (var item in _currentEmplist) {
-      if (item.id == employeeId) {
-        _currentEmplist.remove(item);
-        break;
-      }
-    }
 
-    for (var item in _prevEmpList) {
-      if (item.id == employeeId) {
-        _prevEmpList.remove(item);
-        break;
-      }
-    }
+    widget.removeItemCallback!(employeeId);
+
     widget.bloc.add(EmployeeRemoveFromDBEvent(id: employeeId));
-    // Future.delayed(const Duration(seconds: 1));
   }
 
   _retrieveCurrentAndPreviousEmp(List<Employee> empList) {

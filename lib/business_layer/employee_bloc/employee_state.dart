@@ -1,5 +1,6 @@
-import 'package:employee_app/data_layer/models/employee_model.dart';
 import 'package:equatable/equatable.dart';
+
+import '../../data_layer/models/employee_model.dart';
 
 abstract class EmployeeState extends Equatable {
   const EmployeeState();

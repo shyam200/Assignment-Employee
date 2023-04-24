@@ -1,4 +1,3 @@
-import 'package:employee_app/presentation_layer/employee_add_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,6 +10,7 @@ import '../resources/dimension_keys.dart';
 import '../resources/images.dart';
 import '../resources/string_keys.dart';
 import '../resources/styles/text_styles.dart';
+import 'employee_add_details_page.dart';
 import 'employee_list_page.dart';
 
 class EmployeeMainPage extends StatefulWidget {
@@ -31,12 +31,6 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
     _bloc.add(EmployeeGetDataEvent());
   }
 
-  // @override
-  // void didUpdateWidget(covariant EmployeeMainPage oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   _employeesList;
-  // }
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer(
@@ -55,13 +49,11 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
               style: TextStyles.appTitle,
             ),
           ),
-          body:
-              // state is EmployeeLoadingSate
-              //     ? const Center(
-              //         child: CircularProgressIndicator(),
-              //       )
-              //     :
-              _buildBody(),
+          body: state is EmployeeLoadingSate
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : _buildBody(),
           floatingActionButton: SizedBox(
             width: DimensionKeys.floatinActionBtnDimension,
             height: DimensionKeys.floatinActionBtnDimension,
@@ -73,10 +65,12 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
   }
 
   _buildBody() {
+    // await Future.delayed(Duration(seconds: 2)).then((value) {},),
     return _employeesList.isNotEmpty
         ? EmployeeListPage(
             bloc: _bloc,
             employeesList: _employeesList,
+            removeItemCallback: _removeItemFromLocalList,
           )
         : _buildNoDataImage();
   }
@@ -102,7 +96,7 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
         final shouldRefresh = await Navigator.of(context).push(
             MaterialPageRoute(
                 builder: (_) => AddEmployeeDetailsPage(bloc: _bloc)));
-        // .then((value) => setState(() {}));
+
         if (shouldRefresh ?? false) {
           _bloc.add(EmployeeGetDataEvent());
         }
@@ -111,5 +105,14 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
           borderRadius: BorderRadius.all(Radius.circular(8.0))),
       child: const Icon(Icons.add),
     );
+  }
+
+  _removeItemFromLocalList(String id) {
+    for (var employee in _employeesList) {
+      if (employee.id == id) {
+        _employeesList.remove(employee);
+        break;
+      }
+    }
   }
 }

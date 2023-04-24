@@ -1,12 +1,8 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../business_layer/employee_bloc/employee_bloc.dart';
 import '../business_layer/employee_bloc/employee_event.dart';
-import '../business_layer/employee_bloc/employee_state.dart';
 import '../core/custom_date_picker.dart';
 import '../core/horizontal_line.dart';
 import '../data_layer/models/employee_model.dart';
@@ -31,7 +27,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   final TextEditingController _selectRoleController = TextEditingController();
   final TextEditingController _todayDateController = TextEditingController();
   final TextEditingController _noDateController = TextEditingController();
-  // late final EmployeeBloc _bloc;
+  bool _isSaveBtnActive = false;
 
   @override
   void initState() {
@@ -40,7 +36,6 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
     _selectRoleController.text = widget.employee?.employeeRole ?? '';
     _todayDateController.text = widget.employee?.dateFrom ?? '';
     _noDateController.text = widget.employee?.dateTo ?? '';
-    // _bloc = di<EmployeeBloc>();
   }
 
   @override
@@ -144,6 +139,9 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
             hintText: 'Employee name',
             contentPadding: const EdgeInsets.symmetric(
                 vertical: MarginKeys.commonVerticalPadding)),
+        onChanged: (_) {
+          _shouldEnableSaveToDB();
+        },
       ),
     );
   }
@@ -177,9 +175,9 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
             SizedBox(
               height: 40,
               child: OutlinedButton(
-                onPressed: _onSaveTap,
+                onPressed: _isSaveBtnActive ? _onSaveTap : null,
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: _isSaveBtnActive ? Colors.blue : Colors.grey,
                 ),
                 child: Text(
                   StringKeys.saveText,
@@ -315,6 +313,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   _onBottomSheetItemTap(String item) {
     _selectRoleController.text = item;
     Navigator.of(context).pop();
+    _shouldEnableSaveToDB();
   }
 
   _onTodayDateTap() async {
@@ -330,6 +329,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
         ? formattedDate.format(picketdate)
         : StringKeys.today;
     _todayDateController.text = selectedDate;
+    _shouldEnableSaveToDB();
   }
 
   _onNoDateTap() async {
@@ -354,5 +354,24 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
         ? formattedDate.format(picketdate)
         : StringKeys.noDate;
     _noDateController.text = selectedDate.toString();
+  }
+
+  //check for error handling
+  _shouldEnableSaveToDB() {
+    if (!_isNullOrEmpty(_employeeController.text) &&
+        !_isNullOrEmpty(_selectRoleController.text) &&
+        !_isNullOrEmpty(_todayDateController.text)) {
+      setState(() {
+        _isSaveBtnActive = true;
+      });
+    } else {
+      setState(() {
+        _isSaveBtnActive = false;
+      });
+    }
+  }
+
+  _isNullOrEmpty(String? text) {
+    return (text == null || text.isEmpty) ? true : false;
   }
 }
