@@ -4,7 +4,6 @@ class StringKeys {
   static const noEmployeeText = "No employee records found";
   static const cancelText = "Cancel";
   static const saveText = "Save";
-  static const selectRoleHintText = "Select role";
   static const addEmployeeTitle = "Add Employee Details";
   static const editEmployeeTitle = "Edit Employee Details";
   static const currnetEmpHeading = "Current employees";
@@ -19,12 +18,17 @@ class StringKeys {
   static const qaTester = "QA Tester";
   static const productOwner = "Product Owner";
 
-  //CustomDate Header
+  //CustomDate picker
   static const today = "Today";
   static const nextMonday = "Next Monday";
   static const nextTuesday = "Next Tuesday";
   static const afterWeek = "After 1 Week";
+  static const dateFormat = "d MMM, y";
 
   //Hive data key
   static const employeeDataKey = "employeeDataKey";
+
+  // Add/Edit Text
+  static const hintEmpText = "Employee name";
+  static const selectRoleHintText = "Select role";
 }

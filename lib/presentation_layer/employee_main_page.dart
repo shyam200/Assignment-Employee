@@ -50,22 +50,29 @@ class _EmployeeMainPageState extends State<EmployeeMainPage> {
             ),
           ),
           body: state is EmployeeLoadingSate
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
+              ? _buildLoadingIndicator()
               : _buildBody(),
-          floatingActionButton: SizedBox(
-            width: DimensionKeys.floatinActionBtnDimension,
-            height: DimensionKeys.floatinActionBtnDimension,
-            child: _buildAddBtn(),
-          ),
+          floatingActionButton: _buildFloatingAddBtn(),
         );
       },
     );
   }
 
+  _buildFloatingAddBtn() {
+    return SizedBox(
+      width: DimensionKeys.floatinActionBtnDimension,
+      height: DimensionKeys.floatinActionBtnDimension,
+      child: _buildAddBtn(),
+    );
+  }
+
+  _buildLoadingIndicator() {
+    return const Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
   _buildBody() {
-    // await Future.delayed(Duration(seconds: 2)).then((value) {},),
     return _employeesList.isNotEmpty
         ? EmployeeListPage(
             bloc: _bloc,

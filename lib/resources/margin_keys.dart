@@ -5,4 +5,5 @@ class MarginKeys {
   static const double commonVerticalMargin = 20.0;
   static const double deleteIconRightMargin = 21.0;
   static const double commonTopMargin = 24.0;
+  static const double commonMargin12 = 12.0;
 }

@@ -28,6 +28,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   final TextEditingController _todayDateController = TextEditingController();
   final TextEditingController _noDateController = TextEditingController();
   bool _isSaveBtnActive = false;
+  DateTime? _currentPickedDate;
 
   @override
   void initState() {
@@ -57,7 +58,11 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   _buildBody() {
     return Stack(children: [
       Padding(
-        padding: const EdgeInsets.only(top: 24, left: 16, right: 16),
+        padding: const EdgeInsets.only(
+          top: MarginKeys.commonTopMargin,
+          left: MarginKeys.margin16,
+          right: MarginKeys.margin16,
+        ),
         child: Column(
           children: [
             _employeeField(),
@@ -136,7 +141,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
                     width: DimensionKeys.textFieldBorderWidth,
                     color: Colors.grey)),
             prefixIcon: Image.asset(Images.employeeIcon),
-            hintText: 'Employee name',
+            hintText: StringKeys.hintEmpText,
             contentPadding: const EdgeInsets.symmetric(
                 vertical: MarginKeys.commonVerticalPadding)),
         onChanged: (_) {
@@ -149,12 +154,12 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   _buildBottomBtns() {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(bottom: MarginKeys.commonMargin12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             SizedBox(
-              height: 40,
+              height: DimensionKeys.textFieldHeight,
               child: OutlinedButton(
                 onPressed: _onCancelTap,
                 style: OutlinedButton.styleFrom(
@@ -171,9 +176,9 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: MarginKeys.margin16),
             SizedBox(
-              height: 40,
+              height: DimensionKeys.textFieldHeight,
               child: OutlinedButton(
                 onPressed: _isSaveBtnActive ? _onSaveTap : null,
                 style: OutlinedButton.styleFrom(
@@ -255,7 +260,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   _buildTodayDateField() {
     return SizedBox(
       height: DimensionKeys.textFieldHeight,
-      width: 170,
+      width: DimensionKeys.dateFieldWidth,
       child: TextField(
         controller: _todayDateController,
         decoration: InputDecoration(
@@ -284,7 +289,7 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   _buildNoDateFiled() {
     return SizedBox(
       height: DimensionKeys.textFieldHeight,
-      width: 170,
+      width: DimensionKeys.dateFieldWidth,
       child: TextField(
         controller: _noDateController,
         decoration: InputDecoration(
@@ -319,41 +324,53 @@ class _AddEmployeeDetailsPageState extends State<AddEmployeeDetailsPage> {
   _onTodayDateTap() async {
     final picketdate = await showCustomDatePicker(
         context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2050),
-        cancelText: StringKeys.cancelText,
-        confirmText: StringKeys.saveText);
-    final formattedDate = DateFormat('d MMM y');
-    final selectedDate = picketdate != null
-        ? formattedDate.format(picketdate)
-        : StringKeys.today;
-    _todayDateController.text = selectedDate;
-    _shouldEnableSaveToDB();
-  }
-
-  _onNoDateTap() async {
-    final picketdate = await showCustomDatePicker(
-        context: context,
         builder: (context, child) {
-          return Container(
-            decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(44.0))),
-            child: child,
-          );
+          return _datePickerTheme(context, child);
         },
         initialDate: DateTime.now(),
         firstDate: DateTime(2000),
         lastDate: DateTime(2050),
         cancelText: StringKeys.cancelText,
+        confirmText: StringKeys.saveText);
+    final formattedDate = DateFormat(StringKeys.dateFormat);
+    final selectedDate = picketdate != null
+        ? formattedDate.format(picketdate)
+        : StringKeys.today;
+    _currentPickedDate = picketdate;
+    _todayDateController.text = selectedDate;
+    _shouldEnableSaveToDB();
+  }
+
+  _onNoDateTap() async {
+    final currentSelectedDate = DateTime.parse(_currentPickedDate.toString());
+    final picketdate = await showCustomDatePicker(
+        context: context,
+        builder: (context, child) {
+          return _datePickerTheme(context, child);
+        },
+        initialDate: DateTime(currentSelectedDate.year,
+            currentSelectedDate.month, currentSelectedDate.day),
+        firstDate: DateTime(currentSelectedDate.year, currentSelectedDate.month,
+            currentSelectedDate.day),
+        lastDate: DateTime(2050),
+        cancelText: StringKeys.cancelText,
         confirmText: StringKeys.saveText,
         isToDate: true);
 
-    final formattedDate = DateFormat('d MMM y');
+    final formattedDate = DateFormat(StringKeys.dateFormat);
     final selectedDate = picketdate != null
         ? formattedDate.format(picketdate)
         : StringKeys.noDate;
     _noDateController.text = selectedDate.toString();
+  }
+
+  Theme _datePickerTheme(BuildContext context, Widget? child) {
+    return Theme(
+        data: Theme.of(context).copyWith(
+            dialogTheme: DialogTheme(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)))),
+        child: child ?? const SizedBox());
   }
 
   //check for error handling

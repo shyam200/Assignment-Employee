@@ -3,4 +3,5 @@ class DimensionKeys {
   static const double textFieldHeight = 40;
   static const double textFieldBorderRadius = 4;
   static const double textFieldBorderWidth = 1;
+  static const double dateFieldWidth = 150;
 }

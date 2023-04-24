@@ -473,7 +473,7 @@ class _DatePickerDialogState extends State<DatePickerDialog>
         : textTheme.headline4?.copyWith(color: onPrimarySurface);
 
     final formattedDate = df.DateFormat('d MMM y');
-    final todayDate = formattedDate.format(widget.initialDate);
+    final todayDate = formattedDate.format(DateTime.now());
     final Widget actions = Container(
         constraints: const BoxConstraints(minHeight: 52.0),
         padding: const EdgeInsets.symmetric(
@@ -1028,7 +1028,7 @@ class _DatePickerHeaderState extends State<_DatePickerHeader> {
       _isNextWeek = false;
       widget.isToDate
           ? {
-              widget.handleDateChangeCallback!(widget.selectedDate),
+              widget.handleDateChangeCallback!(DateTime.now()),
               widget.changeIsToDate!(false)
             }
           : widget.handleDateChangeCallback!(

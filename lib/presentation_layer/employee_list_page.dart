@@ -72,7 +72,8 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
   _buildDeleteInfoText() {
     return (_currentEmplist.isNotEmpty || _prevEmpList.isNotEmpty)
         ? Padding(
-            padding: const EdgeInsets.only(top: 12, left: MarginKeys.margin16),
+            padding: const EdgeInsets.only(
+                top: MarginKeys.commonMargin12, left: MarginKeys.margin16),
             child: Text(
               StringKeys.deleteInfoText,
               style: TextStyles.subTitleText.copyWith(
@@ -155,7 +156,8 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
               color: EMPColors.fromHex(hexString: EMPColors.headingColor)),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6.0),
+          padding: const EdgeInsets.symmetric(
+              vertical: MarginKeys.commonMargin12 / 2),
           child: Text(employee.employeeRole,
               style: TextStyles.subTitleText.copyWith(
                 color: EMPColors.fromHex(hexString: EMPColors.subHeadingColor),
@@ -165,7 +167,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
             ? Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(employee.dateFrom,
+                  Text(_getEmpDateFrom(employee),
                       style: TextStyles.subTitleText.copyWith(
                         color: EMPColors.fromHex(
                             hexString: EMPColors.subHeadingColor),
@@ -227,6 +229,13 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
         _currentEmplist.add(employee);
       }
     }
+  }
+
+  String _getEmpDateFrom(Employee employee) {
+    //  ( employee?.dateTo != null && (employee?.dateTo?.isNotEmpty ?? true)) ?
+    return employee.dateTo!.isEmpty
+        ? 'From ${employee.dateFrom}'
+        : employee.dateFrom;
   }
 
   bool _isPrevEmployee(Employee employee) {
