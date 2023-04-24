@@ -1,16 +1,21 @@
 # employee_app
 
-A new Flutter project.
+- Employee management app to keep track of current and previous employees.
 
-## Getting Started
+- Employees can be added, updated, and deleted.
 
-This project is a starting point for a Flutter application.
+- A local Hive DB database is used for employee persistence.
 
-A few resources to get you started if this is your first Flutter project:
+- BLoC state management is used to separate business logic and manage state across applications.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Dependency injection is used to provide loose coupling between layers
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Registered database, BLoC as singleton and factory in dependency injection.
+
+- App is developed in a three-layer architecture for better code quality.
+
+- Extra core layer added to separate common widgets and databases.
+
+- Maintained a separate Resource folder for resources like strings, dimensions, margins, paddings, colors and image paths.
+
+
