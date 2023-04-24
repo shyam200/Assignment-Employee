@@ -1021,19 +1021,21 @@ class _DatePickerHeaderState extends State<_DatePickerHeader> {
 
   //method to calculate next monday
   _onNextMondayTap() {
-    setState(() {
-      _isToday = false;
-      _isNextMonday = true;
-      _isNextTuesday = false;
-      _isNextWeek = false;
-      widget.isToDate
-          ? {
-              widget.handleDateChangeCallback!(DateTime.now()),
-              widget.changeIsToDate!(false)
-            }
-          : widget.handleDateChangeCallback!(
-              widget.selectedDate?.nextDay(DateTime.monday));
-    });
+    widget.selectedDate!.isBefore(DateTime.now())
+        ? setState(() {
+            _isToday = false;
+            _isNextMonday = true;
+            _isNextTuesday = false;
+            _isNextWeek = false;
+            widget.isToDate
+                ? {
+                    widget.handleDateChangeCallback!(DateTime.now()),
+                    widget.changeIsToDate!(false)
+                  }
+                : widget.handleDateChangeCallback!(
+                    widget.selectedDate?.nextDay(DateTime.monday));
+          })
+        : null;
   }
 
   //Method to calculate next tuesday
